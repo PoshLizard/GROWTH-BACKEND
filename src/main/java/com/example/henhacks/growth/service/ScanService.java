@@ -30,7 +30,7 @@ public class ScanService {
 
 
     private final String apiKey;
-    private final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+    private final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     public ScanService(GrowthLogRepository logRepo, PlantRepository plantRepo, @Value("${GEMINI_API_KEY}") String apiKey) {
         this.logRepo = logRepo;
@@ -116,12 +116,14 @@ public class ScanService {
                 com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(cleanedJson);
 
                 int newScore = root.path("healthScore").asInt(5);
+                String newStage = root.path("growthStage").asText("Unknown");
                 // 3. Extract and set fields
                 log.setHealthScore(root.path("healthScore").asInt(5));
                 log.setGrowthStage(root.path("growthStage").asText("Unknown"));
                 log.setAiAdvice(root.path("advice").asText(aiRawResult));
 
                 plant.setHealthScore(newScore);
+                plant.setGrowthStage(newStage);
 
             } catch (Exception parseError) {
                 // Fallback: if AI returns garbage, put everything in the advice field
