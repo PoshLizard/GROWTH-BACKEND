@@ -15,6 +15,7 @@ public class Plant {
     private String nickname;
     private String species;
     private int healthScore; // We'll get this from Gemini later
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "garden_id")
@@ -62,5 +63,21 @@ public class Plant {
 
     public void setLogs(List<GrowthLog> logs) {
         this.logs = logs;
+    }
+
+    public Garden getGarden() {
+        return garden;
+    }
+
+    public void setGarden(Garden garden) {
+        this.garden = garden;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

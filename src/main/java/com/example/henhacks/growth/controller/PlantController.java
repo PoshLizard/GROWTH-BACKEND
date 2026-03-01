@@ -36,10 +36,11 @@ public class PlantController {
     }
 
     // 3. POST: Add a new plant to the garden
-    @PostMapping
-    public ResponseEntity<Plant> createPlant(@RequestBody Plant plant) {
-        Plant savedPlant = plantService.savePlant(plant);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedPlant); // Returns 201
+    @PostMapping("/garden/{gardenId}")
+    public ResponseEntity<Plant> createPlant(@PathVariable Long gardenId, @RequestBody Plant plant) {
+        // We pass the gardenId to the service to handle the association
+        Plant savedPlant = plantService.savePlantToGarden(gardenId, plant);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedPlant);
     }
 
     @DeleteMapping("/{id}")

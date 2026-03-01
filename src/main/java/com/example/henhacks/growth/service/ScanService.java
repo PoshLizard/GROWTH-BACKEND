@@ -47,6 +47,35 @@ public class ScanService {
         Plant plant = plantRepo.findById(plantId)
                 .orElseThrow(() -> new RuntimeException("Plant not found with ID: " + plantId));
 
+        // --- NEW: SAVE IMAGE TO DISK AND UPDATE PLANT ---
+        try {
+            // Create the uploads folder if it doesn't exist
+            String uploadDir = "uploads/";
+            java.io.File directory = new java.io.File(uploadDir);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // Generate a unique filename using the plant ID and current timestamp
+            String filename = "plant_" + plantId + "_" + System.currentTimeMillis() + ".jpg";
+            java.nio.file.Path filePath = java.nio.file.Paths.get(uploadDir, filename);
+
+            // Write the byte array directly to the file system
+            java.nio.file.Files.write(filePath, imageBytes);
+
+            // Update the plant's image URL to point to the new file
+            plant.setImageUrl("/uploads/" + filename);
+
+            // Save the updated plant (Hibernate will actually do this automatically
+            // because of @Transactional, but explicit saves are good practice!)
+            plantRepo.save(plant);
+
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to save plant image to disk", e);
+        }
+        // --- END NEW IMAGE LOGIC ---
+
+        // Convert the same bytes to Base64 for Gemini
         String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
         Map<String, Object> requestBody = Map.of(
@@ -86,10 +115,13 @@ public class ScanService {
                 // 2. Parse into a JsonNode
                 com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(cleanedJson);
 
+                int newScore = root.path("healthScore").asInt(5);
                 // 3. Extract and set fields
                 log.setHealthScore(root.path("healthScore").asInt(5));
                 log.setGrowthStage(root.path("growthStage").asText("Unknown"));
                 log.setAiAdvice(root.path("advice").asText(aiRawResult));
+
+                plant.setHealthScore(newScore);
 
             } catch (Exception parseError) {
                 // Fallback: if AI returns garbage, put everything in the advice field
