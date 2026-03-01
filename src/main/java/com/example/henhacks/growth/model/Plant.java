@@ -1,4 +1,5 @@
 package com.example.henhacks.growth.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -14,6 +15,11 @@ public class Plant {
     private String nickname;
     private String species;
     private int healthScore; // We'll get this from Gemini later
+
+    @ManyToOne
+    @JoinColumn(name = "garden_id")
+    @JsonIgnore // Important: Prevents infinite recursion in JSON
+    private Garden garden;
 
     @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GrowthLog> logs = new ArrayList<>();

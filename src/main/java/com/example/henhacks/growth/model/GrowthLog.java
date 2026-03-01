@@ -78,4 +78,8 @@ public class GrowthLog {
     public void setGrowthStage(String growthStage) {
         this.growthStage = growthStage;
     }
+
+    public Long getId() {
+        return id;
+    }
 }
